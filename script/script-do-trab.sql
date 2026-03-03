@@ -93,13 +93,7 @@ CREATE TABLE Proposta(
 	CONSTRAINT status_proposta CHECK (status IN ('Em Analise', 'Aprovada', 'Cancelada', 'Recusada'))
 );
 
--- =========================
--- POVOAMENTO (INSERTs)
--- =========================
-
--- =========================
--- POVOAMENTO COMPLETO (ORIGINAL + EXTRA)
--- =========================
+-- POVOAMENTO DO BANCO
 
 -- 1) Tipo_Imovel
 INSERT INTO Tipo_Imovel (id_tipo, nome_tipo, descricao) VALUES
@@ -230,6 +224,8 @@ VALUES
 (308, 3000.00,  '2026-02-09', 'Boleto', 'Pendente',  208),
 (309, 5000.00,  '2026-02-10', 'PIX',    'Pago',      207),
 (310, 2500.00,  '2026-02-12', 'Cartão', 'Cancelado', 210);
+
+-- SEÇÃO PARA VERIFICAR SE O POVOAMENTO FOI EXECUTADO CORRETAMENTE
 
 SELECT * FROM Tipo_Imovel;
 SELECT * FROM Proprietario;
