@@ -245,3 +245,100 @@ SELECT COUNT(*) FROM Proposta;
 SELECT COUNT(*) FROM Contrato;
 SELECT COUNT(*) FROM Pagamento;
 
+-- FAZ O UPDATE DO E-MAIL DO CLIENTE
+UPDATE Cliente
+SET email = 'guilherme@ex.com'
+WHERE id_cliente = 1;
+
+-- ATUALIZA O PERCENTUAL DE COMISSÃO DE UM CORRETOR
+UPDATE Corretor
+SET percentual_comissao = 6.75
+WHERE id_corretor = 3;
+
+-- ATUALIZA O STATUS DE IMÓVEL
+UPDATE Imovel
+SET status = 'Vendido'
+WHERE codigo = 17;
+
+-- REMOVE 3 PROPOSTAS
+DELETE FROM Proposta WHERE id_proposta = 104;  -- Cancelada
+DELETE FROM Proposta WHERE id_proposta = 111;  -- Cancelada
+DELETE FROM Proposta WHERE id_proposta = 102;  -- Recusada
+
+-- 7) Consulta utilizada para mostrar todos os contrato entre cliente, corretor e imóvel.
+SELECT
+  ct.id_contrato,
+  ct.tipo_contrato,
+  ct.data_inicio,
+  ct.data_fim,
+  ct.valor_fechado,
+  cl.nome AS cliente,
+  co.nome AS corretor,
+  i.codigo AS cod_imovel,
+  i.endereco
+FROM Contrato ct
+JOIN Cliente  cl ON ct.contrato_cliente  = cl.id_cliente
+JOIN Corretor co ON ct.contrato_corretor = co.id_corretor
+JOIN Imovel   i  ON ct.contrato_imovel   = i.codigo
+ORDER BY ct.data_inicio;
+
+-- 8) Mostra quantos contratos um corretor fechou e a média do valor fechado.
+SELECT
+  co.id_corretor,
+  co.nome,
+  COUNT(*)               AS qtd_contratos,
+  SUM(ct.valor_fechado)  AS total_fechado,
+  AVG(ct.valor_fechado)  AS media_fechado
+FROM Corretor co
+JOIN Contrato ct ON ct.contrato_corretor = co.id_corretor
+GROUP BY co.id_corretor, co.nome
+ORDER BY total_fechado DESC;
+
+-- 9) Lista todos os clientes que já fizeram pelo menos uma proposta.
+SELECT
+  cl.id_cliente,
+  cl.nome,
+  cl.cpf,
+  cl.telefone
+FROM Cliente cl
+WHERE EXISTS (
+  SELECT 1
+  FROM Proposta pr
+  WHERE pr.proposta_cliente = cl.id_cliente
+)
+ORDER BY cl.nome;
+
+-- 10) Lista todos os imóveis com contratos associados.
+SELECT
+  i.codigo,
+  i.endereco,
+  i.status,
+  ct.id_contrato,
+  ct.tipo_contrato,
+  ct.data_inicio
+FROM Imovel i
+LEFT OUTER JOIN Contrato ct
+  ON ct.contrato_imovel = i.codigo
+ORDER BY i.codigo;
+
+-- 11) Acha os imóveis que estão disponíveis e tem proposta em análise.
+SELECT codigo
+FROM Imovel
+WHERE status = 'Disponivel'
+INTERSECT
+SELECT proposta_imovel
+FROM Proposta
+WHERE status = 'Em Analise'
+ORDER BY codigo;
+
+-- 12) Mostra todos os imóveis que não possuem contratos.
+SELECT
+  i.codigo,
+  i.endereco,
+  i.status
+FROM Imovel i
+WHERE i.codigo NOT IN (
+  SELECT ct.contrato_imovel
+  FROM Contrato ct
+)
+ORDER BY i.codigo;
