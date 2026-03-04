@@ -294,11 +294,9 @@ GROUP BY tipo_imovel.nome_tipo
 ORDER BY Faturamento_Total DESC;
 
 -- 5) Proprietarios que nao possui imovel cadastrado
-SELECT nome, email
-FROM Proprietario
-WHERE id_proprietario NOT IN(
-	SELECT imovel_proprietario FROM Imovel
-);
+SELECT id_proprietario FROM Proprietario
+EXCEPT
+SELECT imovel_proprietario FROM Imovel;
 
 -- 6) Disponibilidade de imóveis acima da média
 SELECT endereco, finalidade,status, valor
