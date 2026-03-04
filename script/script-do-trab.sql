@@ -275,7 +275,7 @@ GROUP BY Proprietario.nome;
  -- 2) Imovel resumido a tipo, descricao e valor
 SELECT Imovel.codigo, 
 Imovel.valor AS Valor, 
-tipo_imovel.nome_tipo AS Nome ,
+tipo_imovel.nome_tipo AS Nome,
 tipo_imovel.descricao AS Descricao
 FROM Imovel, tipo_imovel
 WHERE imovel.tipo_imovel = tipo_imovel.id_tipo ;
