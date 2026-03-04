@@ -267,7 +267,7 @@ DELETE FROM Proposta WHERE id_proposta = 102;  -- Recusada
 
 
 -- 1) Quantidade de imóveis e valor total por Proprietário
-SELECT Proprietario.nome, COUNT(Imovel.codigo) AS Quantidade_imoveis, SUM(Imovel.valor) AS Valor
+SELECT Proprietario.nome, COUNT(Imovel.codigo) AS Quantidade_imoveis, SUM(Imovel.valor)
 FROM Imovel
 JOIN Proprietario ON Imovel.imovel_proprietario = Proprietario.id_proprietario
 GROUP BY Proprietario.nome;
