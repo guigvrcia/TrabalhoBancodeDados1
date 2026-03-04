@@ -266,10 +266,11 @@ DELETE FROM Proposta WHERE id_proposta = 111;  -- Cancelada
 DELETE FROM Proposta WHERE id_proposta = 102;  -- Recusada
 
 
--- 1) Lista de imóveis e seus Donos, unindo tabela Imovel e Proprietario
-SELECT Imovel.endereco, Imovel.valor, Proprietario.nome
+-- 1) Quantidade de imóveis e valor total por Proprietário
+SELECT Proprietario.nome, COUNT(Imovel.codigo) AS Quantidade_imoveis, SUM(Imovel.valor)
 FROM Imovel
-JOIN Proprietario ON Imovel.imovel_proprietario = Proprietario.id_proprietario;
+JOIN Proprietario ON Imovel.imovel_proprietario = Proprietario.id_proprietario
+GROUP BY Proprietario.nome;
  
  -- 2) Imovel resumido a tipo, descricao e valor
 SELECT Imovel.codigo, 
