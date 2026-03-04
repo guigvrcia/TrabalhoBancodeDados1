@@ -265,6 +265,49 @@ DELETE FROM Proposta WHERE id_proposta = 104;  -- Cancelada
 DELETE FROM Proposta WHERE id_proposta = 111;  -- Cancelada
 DELETE FROM Proposta WHERE id_proposta = 102;  -- Recusada
 
+
+-- 1) Lista de imóveis e seus Donos, unindo tabela Imovel e Proprietario
+SELECT Imovel.endereco, Imovel.valor, Proprietario.nome
+FROM Imovel
+JOIN Proprietario ON Imovel.imovel_proprietario = Proprietario.id_proprietario;
+ 
+ -- 2) Imovel resumido a tipo, descricao e valor
+SELECT Imovel.codigo, 
+Imovel.valor AS Valor, 
+tipo_imovel.nome_tipo AS Nome ,
+tipo_imovel.descricao AS Descricao
+FROM Imovel, tipo_imovel
+WHERE imovel.tipo_imovel = tipo_imovel.id_tipo ;
+
+-- 3) Situacao de pagamento de todos os contratos
+SELECT Contrato.id_contrato, Pagamento.situacao
+FROM Contrato
+LEFT JOIN Pagamento ON Contrato.id_contrato = Pagamento.pagamento_contrato;
+
+
+-- 4) Faturamento por tipo de Imóvel
+SELECT tipo_imovel.nome_tipo AS Categoria, SUM(Contrato.valor_fechado) AS Faturamento_Total
+FROM tipo_imovel 
+JOIN Imovel ON Tipo_imovel.id_tipo = Imovel.tipo_imovel
+JOIN Contrato ON Imovel.codigo = Contrato.contrato_imovel
+GROUP BY tipo_imovel.nome_tipo
+ORDER BY Faturamento_Total DESC;
+
+-- 5) Proprietarios que nao possui imovel cadastrado
+SELECT nome, email
+FROM Proprietario
+WHERE id_proprietario NOT IN(
+	SELECT imovel_proprietario FROM Imovel
+);
+
+-- 6) Disponibilidade de imóveis acima da média
+SELECT endereco, finalidade,status, valor
+FROM imovel
+WHERE valor > (
+	SELECT AVG(valor) FROM Imovel
+)
+ORDER BY valor DESC;
+
 -- 7) Consulta utilizada para mostrar todos os contrato entre cliente, corretor e imóvel.
 SELECT
   ct.id_contrato,
