@@ -278,7 +278,7 @@ Imovel.valor AS Valor,
 tipo_imovel.nome_tipo AS Nome,
 tipo_imovel.descricao AS Descricao
 FROM Imovel, tipo_imovel
-WHERE imovel.tipo_imovel = tipo_imovel.id_tipo ;
+WHERE imovel.tipo_imovel = tipo_imovel.id_tipo;
 
 -- 3) Situacao de pagamento de todos os contratos
 SELECT Contrato.id_contrato, Pagamento.situacao
@@ -307,63 +307,67 @@ WHERE valor > (
 )
 ORDER BY valor DESC;
 
--- 7) Consulta utilizada para mostrar todos os contrato entre cliente, corretor e imóvel.
+-- 7) Mostra todos os contratos entre cliente, corretor e imóvel.
 SELECT
-  ct.id_contrato,
-  ct.tipo_contrato,
-  ct.data_inicio,
-  ct.data_fim,
-  ct.valor_fechado,
-  cl.nome AS cliente,
-  co.nome AS corretor,
-  i.codigo AS cod_imovel,
-  i.endereco
-FROM Contrato ct
-JOIN Cliente  cl ON ct.contrato_cliente  = cl.id_cliente
-JOIN Corretor co ON ct.contrato_corretor = co.id_corretor
-JOIN Imovel   i  ON ct.contrato_imovel   = i.codigo
-ORDER BY ct.data_inicio;
+  Contrato.id_contrato,
+  Contrato.tipo_contrato,
+  Contrato.data_inicio,
+  Contrato.data_fim,
+  Contrato.valor_fechado,
+  Cliente.nome AS cliente,
+  Corretor.nome AS corretor,
+  Imovel.codigo AS cod_imovel,
+  Imovel.endereco
+FROM Contrato, Cliente, Corretor, Imovel
+WHERE Contrato.contrato_cliente  = Cliente.id_cliente
+  AND Contrato.contrato_corretor = Corretor.id_corretor
+  AND Contrato.contrato_imovel   = Imovel.codigo
+ORDER BY Contrato.data_inicio;
+
 
 -- 8) Mostra quantos contratos um corretor fechou e a média do valor fechado.
 SELECT
-  co.id_corretor,
-  co.nome,
-  COUNT(*)               AS qtd_contratos,
-  SUM(ct.valor_fechado)  AS total_fechado,
-  AVG(ct.valor_fechado)  AS media_fechado
-FROM Corretor co
-JOIN Contrato ct ON ct.contrato_corretor = co.id_corretor
-GROUP BY co.id_corretor, co.nome
+  Corretor.id_corretor,
+  Corretor.nome,
+  COUNT(*)                AS qtd_contratos,
+  SUM(Contrato.valor_fechado) AS total_fechado,
+  AVG(Contrato.valor_fechado) AS media_fechado
+FROM Corretor, Contrato
+WHERE Contrato.contrato_corretor = Corretor.id_corretor
+GROUP BY Corretor.id_corretor, Corretor.nome
 ORDER BY total_fechado DESC;
+
 
 -- 9) Lista todos os clientes que já fizeram pelo menos uma proposta.
 SELECT
-  cl.id_cliente,
-  cl.nome,
-  cl.cpf,
-  cl.telefone
-FROM Cliente cl
+  Cliente.id_cliente,
+  Cliente.nome,
+  Cliente.cpf,
+  Cliente.telefone
+FROM Cliente
 WHERE EXISTS (
   SELECT 1
-  FROM Proposta pr
-  WHERE pr.proposta_cliente = cl.id_cliente
+  FROM Proposta
+  WHERE Proposta.proposta_cliente = Cliente.id_cliente
 )
-ORDER BY cl.nome;
+ORDER BY Cliente.nome;
 
--- 10) Lista todos os imóveis com contratos associados.
+
+-- 10) Lista todos os imóveis com contratos associados (LEFT OUTER JOIN no estilo antigo).
 SELECT
-  i.codigo,
-  i.endereco,
-  i.status,
-  ct.id_contrato,
-  ct.tipo_contrato,
-  ct.data_inicio
-FROM Imovel i
-LEFT OUTER JOIN Contrato ct
-  ON ct.contrato_imovel = i.codigo
-ORDER BY i.codigo;
+  Imovel.codigo,
+  Imovel.endereco,
+  Imovel.status,
+  Contrato.id_contrato,
+  Contrato.tipo_contrato,
+  Contrato.data_inicio
+FROM Imovel
+LEFT OUTER JOIN Contrato
+  ON Contrato.contrato_imovel = Imovel.codigo
+ORDER BY Imovel.codigo;
 
--- 11) Acha os imóveis que estão disponíveis e tem proposta em análise.
+
+-- 11) Acha os imóveis que estão disponíveis e têm proposta em análise.
 SELECT codigo
 FROM Imovel
 WHERE status = 'Disponivel'
@@ -373,14 +377,15 @@ FROM Proposta
 WHERE status = 'Em Analise'
 ORDER BY codigo;
 
+
 -- 12) Mostra todos os imóveis que não possuem contratos.
 SELECT
-  i.codigo,
-  i.endereco,
-  i.status
-FROM Imovel i
-WHERE i.codigo NOT IN (
-  SELECT ct.contrato_imovel
-  FROM Contrato ct
+  Imovel.codigo,
+  Imovel.endereco,
+  Imovel.status
+FROM Imovel
+WHERE Imovel.codigo NOT IN (
+  SELECT Contrato.contrato_imovel
+  FROM Contrato
 )
-ORDER BY i.codigo;
+ORDER BY Imovel.codigo;
