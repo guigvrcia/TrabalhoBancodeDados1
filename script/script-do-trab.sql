@@ -62,12 +62,17 @@ CREATE TABLE Contrato (
     contrato_proprietario INT,
     contrato_cliente INT NOT NULL,
     contrato_imovel INT NOT NULL,
-	contrato_corretor INT NOT NULL,
     CONSTRAINT fk_contrato_proprietario FOREIGN KEY (contrato_proprietario) REFERENCES Proprietario(id_proprietario),
     CONSTRAINT fk_contrato_cliente FOREIGN KEY (contrato_cliente) REFERENCES Cliente(id_cliente),
-    CONSTRAINT fk_contrato_imovel FOREIGN KEY (contrato_imovel) REFERENCES Imovel (codigo),
-	CONSTRAINT fk_contrato_corretor FOREIGN KEY (contrato_corretor) REFERENCES Corretor(id_corretor)
-	
+    CONSTRAINT fk_contrato_imovel FOREIGN KEY (contrato_imovel) REFERENCES Imovel(codigo)
+);
+
+CREATE TABLE Contrato_Corretor (
+    contrato_id INT NOT NULL,
+    corretor_id INT NOT NULL,
+    PRIMARY KEY (contrato_id, corretor_id),
+    CONSTRAINT fk_cc_contrato FOREIGN KEY (contrato_id) REFERENCES Contrato(id_contrato),
+    CONSTRAINT fk_cc_corretor FOREIGN KEY (corretor_id) REFERENCES Corretor(id_corretor)
 );
 
 CREATE TABLE Pagamento (
@@ -195,19 +200,35 @@ VALUES
 
 -- 7) Contrato
 INSERT INTO Contrato
-(id_contrato, tipo_contrato, data_inicio, data_fim, valor_fechado, contrato_proprietario, contrato_cliente, contrato_imovel, contrato_corretor)
+(id_contrato, tipo_contrato, data_inicio, data_fim, valor_fechado, contrato_proprietario, contrato_cliente, contrato_imovel)
 VALUES
-(200, 'Compra e Venda', '2026-01-20', NULL,        340000.00, 1,  1,  10, 1),
-(201, 'Compra e Venda', '2026-01-21', NULL,        510000.00, 2,  2,  11, 2),
-(202, 'Compra e Venda', '2026-01-22', NULL,        175000.00, 3,  3,  12, 3),
-(203, 'Locação',        '2026-01-23', '2027-01-23', 30000.00, 5,  4,  13, 4),
-(204, 'Compra e Venda', '2026-01-24', NULL,        880000.00, 6,  5,  14, 5),
-(205, 'Compra e Venda', '2026-01-25', NULL,        590000.00, 4,  6,  15, 6),
-(206, 'Compra e Venda', '2026-01-28', NULL,        410000.00, 7,  7,  16, 7),
-(207, 'Compra e Venda', '2026-01-29', NULL,        205000.00, 8,  9,  18, 9),
-(208, 'Locação',        '2026-02-01', '2027-02-01', 36000.00, 9,  10, 19, 8),
-(209, 'Compra e Venda', '2026-02-03', NULL,        580000.00, 1,  13, 22, 11),
-(210, 'Compra e Venda', '2026-02-05', NULL,        155000.00, 2,  14, 23, 12);
+(200, 'Compra e Venda', '2026-01-20', NULL, 340000.00, 1, 1, 10),
+(201, 'Compra e Venda', '2026-01-21', NULL, 510000.00, 2, 2, 11),
+(202, 'Compra e Venda', '2026-01-22', NULL, 175000.00, 3, 3, 12),
+(203, 'Locação',        '2026-01-23', '2027-01-23', 30000.00, 5, 4, 13),
+(204, 'Compra e Venda', '2026-01-24', NULL, 880000.00, 6, 5, 14),
+(205, 'Compra e Venda', '2026-01-25', NULL, 590000.00, 4, 6, 15),
+(206, 'Compra e Venda', '2026-01-28', NULL, 410000.00, 7, 7, 16),
+(207, 'Compra e Venda', '2026-01-29', NULL, 205000.00, 8, 9, 18),
+(208, 'Locação',        '2026-02-01', '2027-02-01', 36000.00, 9, 10, 19),
+(209, 'Compra e Venda', '2026-02-03', NULL, 580000.00, 1, 13, 22),
+(210, 'Compra e Venda', '2026-02-05', NULL, 155000.00, 2, 14, 23);
+
+-- 8) Contratos com mais de um corretor
+INSERT INTO Contrato_Corretor (contrato_id, corretor_id) VALUES
+(200, 1),
+(200, 3),
+(201, 2),
+(202, 3),
+(203, 4),
+(204, 5),
+(204, 6),
+(205, 6),
+(206, 7),
+(207, 9),
+(208, 8),
+(209, 11),
+(210, 12);
 
 -- 8) Pagamento
 INSERT INTO Pagamento
@@ -235,6 +256,7 @@ SELECT * FROM Imovel;
 SELECT * FROM Proposta;
 SELECT * FROM Contrato;
 SELECT * FROM Pagamento;
+SELECT * FROM Contrato_Corretor;
 
 SELECT COUNT(*) FROM Tipo_Imovel;
 SELECT COUNT(*) FROM Proprietario;
@@ -244,6 +266,7 @@ SELECT COUNT(*) FROM Imovel;
 SELECT COUNT(*) FROM Proposta;
 SELECT COUNT(*) FROM Contrato;
 SELECT COUNT(*) FROM Pagamento;
+SELECT COUNT(*) FROM Contrato_Corretor;
 
 -- FAZ O UPDATE DO E-MAIL DO CLIENTE
 UPDATE Cliente
@@ -265,14 +288,13 @@ DELETE FROM Proposta WHERE id_proposta = 104;  -- Cancelada
 DELETE FROM Proposta WHERE id_proposta = 111;  -- Cancelada
 DELETE FROM Proposta WHERE id_proposta = 102;  -- Recusada
 
-
--- 1) Quantidade de imóveis e valor total por Proprietário
+-- 1) Quantidade de imóveis e valor total por Proprietário.
 SELECT Proprietario.nome, COUNT(Imovel.codigo) AS Quantidade_imoveis, SUM(Imovel.valor)
 FROM Imovel
 JOIN Proprietario ON Imovel.imovel_proprietario = Proprietario.id_proprietario
 GROUP BY Proprietario.nome;
  
- -- 2) Imovel resumido a tipo, descricao e valor
+-- 2) Imovel resumido a tipo, descricao e valor.
 SELECT Imovel.codigo, 
 Imovel.valor AS Valor, 
 tipo_imovel.nome_tipo AS Nome,
@@ -280,13 +302,13 @@ tipo_imovel.descricao AS Descricao
 FROM Imovel, tipo_imovel
 WHERE imovel.tipo_imovel = tipo_imovel.id_tipo;
 
--- 3) Situacao de pagamento de todos os contratos
+-- 3) Situacao de pagamento de todos os contratos.
 SELECT Contrato.id_contrato, Pagamento.situacao
 FROM Contrato
 LEFT JOIN Pagamento ON Contrato.id_contrato = Pagamento.pagamento_contrato;
 
 
--- 4) Faturamento por tipo de Imóvel
+-- 4) Faturamento por tipo de Imóvel.
 SELECT tipo_imovel.nome_tipo AS Categoria, SUM(Contrato.valor_fechado) AS Faturamento_Total
 FROM tipo_imovel 
 JOIN Imovel ON Tipo_imovel.id_tipo = Imovel.tipo_imovel
@@ -294,12 +316,14 @@ JOIN Contrato ON Imovel.codigo = Contrato.contrato_imovel
 GROUP BY tipo_imovel.nome_tipo
 ORDER BY Faturamento_Total DESC;
 
--- 5) Proprietarios que nao possui imovel cadastrado
-SELECT id_proprietario FROM Proprietario
+-- 5) Esta consulta é utilizada para listar todos os clientes que não possuem contratos.
+SELECT id_cliente
+FROM Cliente
 EXCEPT
-SELECT imovel_proprietario FROM Imovel;
+SELECT contrato_cliente
+FROM Contrato;
 
--- 6) Disponibilidade de imóveis acima da média
+-- 6) Disponibilidade de imóveis acima da média.
 SELECT endereco, finalidade,status, valor
 FROM imovel
 WHERE valor > (
@@ -318,10 +342,11 @@ SELECT
   Corretor.nome AS corretor,
   Imovel.codigo AS cod_imovel,
   Imovel.endereco
-FROM Contrato, Cliente, Corretor, Imovel
-WHERE Contrato.contrato_cliente  = Cliente.id_cliente
-  AND Contrato.contrato_corretor = Corretor.id_corretor
-  AND Contrato.contrato_imovel   = Imovel.codigo
+FROM Contrato
+JOIN Cliente ON Contrato.contrato_cliente = Cliente.id_cliente
+JOIN Imovel ON Contrato.contrato_imovel = Imovel.codigo
+JOIN Contrato_Corretor ON Contrato.id_contrato = Contrato_Corretor.contrato_id
+JOIN Corretor ON Contrato_Corretor.corretor_id = Corretor.id_corretor
 ORDER BY Contrato.data_inicio;
 
 
@@ -329,11 +354,12 @@ ORDER BY Contrato.data_inicio;
 SELECT
   Corretor.id_corretor,
   Corretor.nome,
-  COUNT(*)                AS qtd_contratos,
+  COUNT(*) AS qtd_contratos,
   SUM(Contrato.valor_fechado) AS total_fechado,
   AVG(Contrato.valor_fechado) AS media_fechado
-FROM Corretor, Contrato
-WHERE Contrato.contrato_corretor = Corretor.id_corretor
+FROM Corretor
+JOIN Contrato_Corretor ON Contrato_Corretor.corretor_id = Corretor.id_corretor
+JOIN Contrato ON Contrato.id_contrato = Contrato_Corretor.contrato_id
 GROUP BY Corretor.id_corretor, Corretor.nome
 ORDER BY total_fechado DESC;
 
